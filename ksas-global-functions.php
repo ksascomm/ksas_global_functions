@@ -559,13 +559,13 @@ add_filter( 'image_downsize', 'ksas_responsive_images', 1, 3 );
 					if ( $args->has_children ) {
 						$class_names = "has-flyout ";
 					}
-								
 					$classes = empty( $item->classes ) ? array() : (array) $item->classes;
 					
 					$class_names .= join( ' ', apply_filters( 'nav_menu_css_class', array_filter( $classes ), $item ) );
-					$class_names = ' class="'. esc_attr( $class_names ) . '"';
+					$class_names = ' class="'. esc_attr( $class_names ) . ' page-id-' . esc_attr( $item->object_id ) .'"';
 		           
-		           	$output .= $indent . '<li id="menu-item-'. $item->ID . '"' . $value . $class_names .'>';
+					$output .= $indent . '<li id="menu-item-'. $item->ID . '"' . $value . $class_names .'>';
+		           
 		
 		           	$attributes  = ! empty( $item->attr_title ) ? ' title="'  . esc_attr( $item->attr_title ) .'"' : '';
 		           	$attributes .= ! empty( $item->target )     ? ' target="' . esc_attr( $item->target     ) .'"' : '';
