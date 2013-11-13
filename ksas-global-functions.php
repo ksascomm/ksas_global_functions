@@ -535,6 +535,14 @@ add_filter( 'image_downsize', 'ksas_responsive_images', 1, 3 );
 				$page_title .= bloginfo('name');
 				$page_title .= print(' | Johns Hopkins University'); 
 			}
+			elseif (is_404()) {
+				$page_title = print('Page Not Found'); 
+				$page_title .= print(' | ');
+				$page_title .= bloginfo('description');
+				$page_title .= print(' '); 
+				$page_title .= bloginfo('name');
+				$page_title .= print(' | Johns Hopkins University'); 
+			}
 			else { 
 				$page_title = bloginfo('description');
 				$page_title .= print(' '); 
