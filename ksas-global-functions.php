@@ -114,34 +114,55 @@ License: GPL2
 		add_action('init', 'register_academicdepartment_tax');
 	
 	// 2.2 Prepopulate choices for academicdepartment taxonomy
-	function add_academicdepartment_terms() {
-		wp_insert_term('Advanced Academic Programs', 'academicdepartment',  array('description'=> '','slug' => 'aap'));
-		wp_insert_term('Anthropology', 'academicdepartment',  array('description'=> '','slug' => 'anthropology'));
-		wp_insert_term('Biology', 'academicdepartment',  array('description'=> '','slug' => 'bio'));
-		wp_insert_term('Biophysics', 'academicdepartment',  array('description'=> '','slug' => 'biophysics'));
-		wp_insert_term('Chemistry', 'academicdepartment',  array('description'=> '','slug' => 'chemistry'));
-		wp_insert_term('Classics', 'academicdepartment',  array('description'=> '','slug' => 'classics'));
-		wp_insert_term('Cognitive Science', 'academicdepartment',  array('description'=> '','slug' => 'cogsci'));
-		wp_insert_term('Earth and Planetary Sciences', 'academicdepartment',  array('description'=> '','slug' => 'eps'));
-		wp_insert_term('Economics', 'academicdepartment',  array('description'=> '','slug' => 'econ'));
-		wp_insert_term('English', 'academicdepartment',  array('description'=> '','slug' => 'english'));
-		wp_insert_term('German and Romance Languages', 'academicdepartment',  array('description'=> '','slug' => 'grll'));
-		wp_insert_term('History', 'academicdepartment',  array('description'=> '','slug' => 'history'));
-		wp_insert_term('History of Art', 'academicdepartment',  array('description'=> '','slug' => 'arthist'));
-		wp_insert_term('History of Science and Technology', 'academicdepartment',  array('description'=> '','slug' => 'host'));
-		wp_insert_term('Humanities', 'academicdepartment',  array('description'=> '','slug' => 'humanities'));
-		wp_insert_term('Mathematics', 'academicdepartment',  array('description'=> '','slug' => 'math'));
-		wp_insert_term('Near Eastern Studies', 'academicdepartment',  array('description'=> '','slug' => 'neareast'));
-		wp_insert_term('Philosophy', 'academicdepartment',  array('description'=> '','slug' => 'philosophy'));
-		wp_insert_term('Physics and Astronomy', 'academicdepartment',  array('description'=> '','slug' => 'physics'));
-		wp_insert_term('Political Science', 'academicdepartment',  array('description'=> '','slug' => 'polisci'));
-		wp_insert_term('Psychological and Brain Sciences', 'academicdepartment',  array('description'=> '','slug' => 'pbs'));
-		wp_insert_term('Sociology', 'academicdepartment',  array('description'=> '','slug' => 'soc'));
-		wp_insert_term('Writing Seminars', 'academicdepartment',  array('description'=> '','slug' => 'writing'));
-		wp_insert_term('Whiting School of Engineering', 'academicdepartment',  array('description'=> '','slug' => 'wse'));
-	}
-	add_action('init', 'add_academicdepartment_terms');
+function check_academicdepartment_terms(){
+ 
+        // see if we already have populated any terms
+    $term = get_terms( 'academicdepartment', array( 'hide_empty' => false ) );
+ 
+    // if no terms then lets add our terms
+    if( empty( $term ) ){
+        $terms = define_academicdepartment_terms();
+        foreach( $terms as $term ){
+            if( !term_exists( $term['name'], 'academicdepartment' ) ){
+                wp_insert_term( $term['name'], 'academicdepartment', array( 'slug' => $term['slug'] ) );
+            }
+        }
+    }
+}
 
+add_action( 'init', 'check_academicdepartment_terms' );
+
+function define_academicdepartment_terms(){
+ 
+$terms = array(
+	'0' => array( 'name' => 'Advanced Academic Programs','slug' => 'aap'),
+	'1' => array( 'name' => 'Anthropology','slug' => 'anthropology'),
+	'2' => array( 'name' => 'Biology','slug' => 'bio'),
+	'3' => array( 'name' => 'Biophysics','slug' => 'biophysics'),
+	'4' => array( 'name' => 'Chemistry','slug' => 'chemistry'),
+	'5' => array( 'name' => 'Classics','slug' => 'classics'),
+	'6' => array( 'name' => 'Cognitive Science','slug' => 'cogsci'),
+	'7' => array( 'name' => 'Earth and Planetary Sciences','slug' => 'eps'),
+	'8' => array( 'name' => 'Economics','slug' => 'econ'),
+	'9' => array( 'name' => 'English','slug' => 'english'),
+	'10' => array( 'name' => 'German and Romance Languages','slug' => 'grll'),
+	'11' => array( 'name' => 'History','slug' => 'history'),
+	'12' => array( 'name' => 'History of Art','slug' => 'arthist'),
+	'13' => array( 'name' => 'History of Science and Technology','slug' => 'host'),
+	'14' => array( 'name' => 'Humanities','slug' => 'humanities'),
+	'15' => array( 'name' => 'Mathematics','slug' => 'math'),
+	'16' => array( 'name' => 'Near Eastern Studies','slug' => 'neareast'),
+	'17' => array( 'name' => 'Philosophy','slug' => 'philosophy'),
+	'18' => array( 'name' => 'Physics and Astronomy','slug' => 'physics'),
+	'19' => array( 'name' => 'Political Science','slug' => 'polisci'),
+	'20' => array( 'name' => 'Psychological and Brain Sciences','slug' => 'pbs'),
+	'21' => array( 'name' => 'Sociology','slug' => 'soc'),
+	'22' => array( 'name' => 'Writing Seminars','slug' => 'writing'),
+	'23' => array( 'name' => 'Whiting School of Engineering','slug' => 'wse'),
+    );
+ 
+    return $terms;
+}
 	// 2.3 registration code for affiliation taxonomy
 		function register_affiliation_tax() {
 			$labels = array(
@@ -173,42 +194,64 @@ License: GPL2
 		}
 		add_action('init', 'register_affiliation_tax');
 	// 2.4 Prepopulate choices for affiliation taxonomy
-		function add_affiliation_terms() {
-			wp_insert_term('Advanced Media Studies', 'affiliation',  array('slug' => 'cams'));
-			wp_insert_term('Africana Studies', 'affiliation',  array('slug' => 'africana'));
-			wp_insert_term('Archaeology', 'affiliation',  array('slug' => 'archaeology'));	
-			wp_insert_term('Behavioral Biology', 'affiliation',  array('slug' => 'behavbio'));
-			wp_insert_term('China STEM', 'affiliation',  array('slug' => 'chinastem'));
-			wp_insert_term('Dance', 'affiliation',  array('slug' => 'dance'));
-			wp_insert_term('Engineering', 'affiliation',  array('slug' => 'engineering'));
-			wp_insert_term('East Asian', 'affiliation',  array('slug' => 'eastasian'));
-			wp_insert_term('Embryology', 'affiliation',  array('slug' => 'embryo'));
-			wp_insert_term('Expository Writing', 'affiliation',  array('slug' => 'ewp'));
-			wp_insert_term('Film and Media', 'affiliation',  array('slug' => 'film'));
-			wp_insert_term('Financial Economics', 'affiliation',  array('slug' => 'cfe'));
-			wp_insert_term('Global Studies', 'affiliation',  array('slug' => 'arrighi'));
-			wp_insert_term('International Studies', 'affiliation',  array('slug' => 'international'));
-			wp_insert_term('Jewish Studies', 'affiliation',  array('slug' => 'jewish'));
-			wp_insert_term('Language Education', 'affiliation',  array('slug' => 'cledu'));
-			wp_insert_term('Latin American Studies', 'affiliation',  array('slug' => 'plas'));
-			wp_insert_term('Mind Brain Institute', 'affiliation',  array('slug' => 'mindbrain'));
-			wp_insert_term('Modern German Thought', 'affiliation',  array('slug' => 'maxkade'));
-			wp_insert_term('Museums and Society', 'affiliation',  array('slug' => 'museums'));
-			wp_insert_term('Music', 'affiliation',  array('slug' => 'music'));
-			wp_insert_term('Neuroscience', 'affiliation',  array('slug' => 'neuroscience'));
-			wp_insert_term('Post-Bac Pre-Med', 'affiliation',  array('slug' => 'pbpm'));
-			wp_insert_term('Pre-Law', 'affiliation',  array('slug' => 'prelaw'));
-			wp_insert_term('Pre-Med', 'affiliation',  array('slug' => 'premed'));
-			wp_insert_term('Premodern Europe', 'affiliation',  array('slug' => 'singleton'));
-			wp_insert_term('Public Health', 'affiliation',  array('slug' => 'publichealth'));
-			wp_insert_term('Quantum Matter', 'affiliation',  array('slug' => 'quantum'));
-			wp_insert_term('Social Policy', 'affiliation',  array('slug' => 'socialpolicy'));
-			wp_insert_term('Theatre Arts', 'affiliation',  array('slug' => 'theatre'));
-			wp_insert_term('Visual Arts', 'affiliation',  array('slug' => 'visual'));
-			wp_insert_term('Women Gender and Sexuality', 'affiliation',  array('slug' => 'wgs'));
-			wp_insert_term('Writing Center', 'affiliation',  array('slug' => 'writingcenter'));
-		}
-		add_action('init', 'add_affiliation_terms');
+function check_affiliation_terms(){
+ 
+        // see if we already have populated any terms
+    $term = get_terms( 'affiliation', array( 'hide_empty' => false ) );
+ 
+    // if no terms then lets add our terms
+    if( empty( $term ) ){
+        $terms = define_affiliation_terms();
+        foreach( $terms as $term ){
+            if( !term_exists( $term['name'], 'affiliation' ) ){
+                wp_insert_term( $term['name'], 'affiliation', array( 'slug' => $term['slug'] ) );
+            }
+        }
+    }
+}
+
+add_action( 'init', 'check_affiliation_terms' );
+
+function define_affiliation_terms(){
+ 
+$terms = array(
+	'0' => array( 'name' => 'Advanced Media Studies','slug' => 'cams'),
+	'1' => array( 'name' => 'Africana Studies','slug' => 'africana'),
+	'2' => array( 'name' => 'Archaeology','slug' => 'archaeology'),	
+	'3' => array( 'name' => 'Behavioral Biology','slug' => 'behavbio'),
+	'4' => array( 'name' => 'China STEM','slug' => 'chinastem'),
+	'5' => array( 'name' => 'Dance','slug' => 'dance'),
+	'6' => array( 'name' => 'Engineering','slug' => 'engineering'),
+	'7' => array( 'name' => 'East Asian','slug' => 'eastasian'),
+	'8' => array( 'name' => 'Embryology','slug' => 'embryo'),
+	'9' => array( 'name' => 'Expository Writing','slug' => 'ewp'),
+	'10' => array( 'name' => 'Film and Media','slug' => 'film'),
+	'11' => array( 'name' => 'Financial Economics','slug' => 'cfe'),
+	'12' => array( 'name' => 'Global Studies','slug' => 'arrighi'),
+	'13' => array( 'name' => 'International Studies','slug' => 'international'),
+	'14' => array( 'name' => 'Jewish Studies','slug' => 'jewish'),
+	'15' => array( 'name' => 'Language Education','slug' => 'cledu'),
+	'16' => array( 'name' => 'Latin American Studies','slug' => 'plas'),
+	'17' => array( 'name' => 'Mind Brain Institute','slug' => 'mindbrain'),
+	'18' => array( 'name' => 'Modern German Thought','slug' => 'maxkade'),
+	'19' => array( 'name' => 'Museums and Society','slug' => 'museums'),
+	'20' => array( 'name' => 'Music','slug' => 'music'),
+	'21' => array( 'name' => 'Neuroscience','slug' => 'neuroscience'),
+	'22' => array( 'name' => 'Post-Bac Pre-Med','slug' => 'pbpm'),
+	'23' => array( 'name' => 'Pre-Law','slug' => 'prelaw'),
+	'24' => array( 'name' => 'Pre-Med','slug' => 'premed'),
+	'25' => array( 'name' => 'Premodern Europe','slug' => 'singleton'),
+	'26' => array( 'name' => 'Public Health','slug' => 'publichealth'),
+	'27' => array( 'name' => 'Quantum Matter','slug' => 'quantum'),
+	'28' => array( 'name' => 'Social Policy','slug' => 'socialpolicy'),
+	'29' => array( 'name' => 'Theatre Arts','slug' => 'theatre'),
+	'30' => array( 'name' => 'Visual Arts','slug' => 'visual'),
+	'31' => array( 'name' => 'Women Gender and Sexuality','slug' => 'wgs'),
+	'32' => array( 'name' => 'Writing Center','slug' => 'writingcenter'),
+    );
+ 
+    return $terms;
+}
 
 /*****************3.0 CUSTOM POST TYPE UI FUNCTIONS*****************************/
 	//**NOTE** Check these functions when the Easy Content Types Plugin is updated 
@@ -415,7 +458,7 @@ add_filter( 'image_downsize', 'ksas_responsive_images', 1, 3 );
 		
 		     if(1 != $pages)
 		     {
-		         echo "<div class='pagination two columns centered mobile-four'>";
+		         echo "<div class='pagination three columns centered mobile-four'>";
 		         if($paged > 2 && $paged > $range+1 && $showitems < $pages) echo "<a href='".get_pagenum_link(1)."'>&laquo;</a>";
 		         if($paged > 1 && $showitems < $pages) echo "<a href='".get_pagenum_link($paged - 1)."'>&lsaquo;</a>";
 		
