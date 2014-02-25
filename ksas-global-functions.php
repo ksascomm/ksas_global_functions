@@ -42,8 +42,10 @@ License: GPL2
 		9.6 Walker class to add page IDs as classes
 	10.0 Global Shortcodes
 		10.1 Custom Menu
+		10.2 Quicksearch Form Shortcode - For use with accordions
 	11.0 Add Mime Types for LaTex files
-
+	12.0 WYSIWYG Mods
+		12.1 Add sub and sup buttons
 /*****************1.0 SECURITY AND PERFORMANCE FUNCTIONS*****************************/
 	// 1.1 Prevent login errors - attacker prevention
 		add_filter('login_errors', create_function('$a', "return null;"));
@@ -821,6 +823,29 @@ function submenu_get_children_ids( $id, $items ) {
 	}
 	
 	add_shortcode( "custommenu", "ksas_custom_menu_shortcode" );
+	//***10.2 Quicksearch Form Shortcode
+	function ksas_quicksearch_shortcode( $atts, $content = null ) {
+		extract( shortcode_atts( 
+			array(  
+				'label'            => 'Quick Search', 
+				'placeholder'       => 'Search by author, title, or keyword', 
+			), $atts )
+		); 
+		echo '<div id="fields_search">
+			<form action="#">
+				<fieldset class="radius10">
+					<div class="row">
+						<h6>' . $label . ':</h6>
+					</div>
+					<div class="row">		
+					<input type="submit" class="icon-search" placeholder="' . $placeholder . '" value="&#xe004;" /><input type="text" name="search" id="quicksearch" /> 	 
+					</div>
+				</fieldset>
+			</form>	
+		</div>';
+	}
+	add_shortcode( "quicksearch", "ksas_quicksearch_shortcode" );
+	
 /*******************11.0 MIME TYPES FOR LATEX UPLOADS******************/
 	add_filter('upload_mimes','add_tex_mime');
 	function add_tex_mime($mimes) {
@@ -841,4 +866,17 @@ function submenu_get_children_ids( $id, $items ) {
 			return wp_mime_type_icon('document');
 		return $icon;
 	}
+/*******************12.0 WYSIWYG******************/	
+	// 12.1 Reveal hidden buttons - sub and sup
+		function my_mce_buttons_2($buttons) {	
+			/**
+			 * Add in a core button that's disabled by default
+			 */
+			$buttons[] = 'sup';
+			$buttons[] = 'sub';
+		
+			return $buttons;
+		}
+		add_filter('mce_buttons_2', 'my_mce_buttons_2');
+		
 ?>
