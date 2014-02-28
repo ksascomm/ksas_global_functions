@@ -33,6 +33,7 @@ License: GPL2
 		8.6 Limit words, can be used in templates on both the_excerpt and the_content or any content call for that matter
 		8.7 Obfuscate Email address email_munge($string);
 		8.8 Create Title for <head> section
+		8.9 Return the Parent's Title - Used with courses
 	9.0 Navigation and Menus
 		9.1 Walker class for foundation
 		9.2 Walker class for mobile dropdowns
@@ -486,6 +487,7 @@ add_filter( 'image_downsize', 'ksas_responsive_images', 1, 3 );
 		    return $slug; 
 		}
 	
+	
 	//***8.3 add is subpage of conditional statement
 		function ksas_is_subpage_of( $parentpage = '' ) {
 			$posts = $GLOBALS['posts'];
@@ -499,7 +501,7 @@ add_filter( 'image_downsize', 'ksas_responsive_images', 1, 3 );
 				return false;
 			}
 		}
-
+		
 	//***8.4 Get page ID from page slug - Used to generate left side nav on some pages
 		function ksas_get_page_id($page_name){
 			global $wpdb;
@@ -597,6 +599,13 @@ add_filter( 'image_downsize', 'ksas_responsive_images', 1, 3 );
 				} 
 			return $page_title;
 		}
+	//***8.9 Return the Parent's Title - Used with courses
+		function the_parent_title() {
+		  global $post;
+		  if($post->post_parent == 0) return '';
+		  $post_data = get_post($post->post_parent);
+		  return $post_data->post_title;
+		  }
 /*******************9.0 NAVIGATION & MENU FUNCTIONS & HELPERS******************/
 
 	//***9.1 Menu Walker to add Foundation CSS classes
