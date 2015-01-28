@@ -767,7 +767,8 @@ function submenu_limit( $items, $args ) {
     if ( empty($args->submenu) )
         return $items;
 
-    $parent_id = array_pop( wp_filter_object_list( $items, array( 'title' => $args->submenu ), 'and', 'ID' ) );
+    $filter_object_list = wp_filter_object_list( $items, array( 'title' => $args->submenu ), 'and', 'ID' );
+    $parent_id = array_pop( $filter_object_list );
     $children  = submenu_get_children_ids( $parent_id, $items );
 
     foreach ( $items as $key => $item ) {
@@ -778,7 +779,6 @@ function submenu_limit( $items, $args ) {
 
     return $items;
 }
-
 function submenu_get_children_ids( $id, $items ) {
 
     $ids = wp_filter_object_list( $items, array( 'menu_item_parent' => $id ), 'and', 'ID' );
