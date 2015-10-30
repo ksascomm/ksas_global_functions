@@ -47,6 +47,7 @@ License: GPL2
 	11.0 Add Mime Types for LaTex files
 	12.0 WYSIWYG Mods
 		12.1 Add sub and sup buttons
+		12.2 Keep html attributes
 /*****************1.0 SECURITY AND PERFORMANCE FUNCTIONS*****************************/
 	// 1.1 Prevent login errors - attacker prevention
 		add_filter('login_errors', create_function('$a', "return null;"));
@@ -931,5 +932,32 @@ function submenu_get_children_ids( $id, $items ) {
 			return $buttons;
 		}
 		add_filter('mce_buttons_2', 'my_mce_buttons_2');
+
+	//12.2 Keep html attributes
+		add_action( 'after_setup_theme', 'x_kses_allow_data_attributes_on_links' );
+		function x_kses_allow_data_attributes_on_links() {
+		  global $allowedposttags;
+
+		    $tags = array( 'a' );
+		    $new_attributes = array(
+		        'data-accordion' => array(),
+		        'data-tab' => array(),
+		    );
+
+		    foreach ( $tags as $tag ) {
+		        if ( isset( $allowedposttags[ $tag ] ) && is_array( $allowedposttags[ $tag ] ) )
+		            $allowedposttags[ $tag ] = array_merge( $allowedposttags[ $tag ], $new_attributes );
+		    }
+		}
+
+		add_filter( 'tiny_mce_before_init', 'x_tinymce_allow_data_attributes_on_links' );
+		function x_tinymce_allow_data_attributes_on_links( $options ) { 
+		    if ( ! isset( $options['extended_valid_elements'] ) ) 
+		        $options['extended_valid_elements'] = ''; 
+
+		    $options['extended_valid_elements'] .= ',a[data-accordion|data-tab|class|id|style|href]';
+
+		    return $options; 
+		}
 		
 ?>
