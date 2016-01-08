@@ -14,6 +14,7 @@ License: GPL2
 		1.1 Prevent Login Errors
 		1.2 Block Malicious Queries
 		1.3 Remove Junk from Head
+		1.4 Disable WP REST API requests for logged out users
 	2.0 Taxonomies
 		2.1 academicdepartment Taxonomy
 		2.2 academicdepartment Terms
@@ -22,6 +23,7 @@ License: GPL2
 	3.0 Custom Post Type UI Functions *NOTE - Check these when Easy Content Types plugin is updated
 	4.0 Responsive Images
 	5.0 Remove Unwanted Widgets
+		5.1 Eliminate Auto-Linking of Image
 	6.0 Change Posts Labels to News
 	7.0 User Capabilities for Custom Post Types
 	8.0 Theme Functions
@@ -69,6 +71,7 @@ License: GPL2
 		    }
 		  }
 		}
+
 	// 1.3 remove junk from head
 		remove_action('wp_head', 'rsd_link');
 		remove_action('wp_head', 'wp_generator');
@@ -79,12 +82,29 @@ License: GPL2
 		remove_action('wp_head', 'start_post_rel_link', 10, 0);
 		remove_action('wp_head', 'parent_post_rel_link', 10, 0);
 		remove_action('wp_head', 'adjacent_posts_rel_link', 10, 0);
+		remove_action('wp_head', 'print_emoji_detection_script', 7);
+		remove_action('admin_print_scripts', 'print_emoji_detection_script');
+		remove_action('wp_print_styles', 'print_emoji_styles');
+		remove_action('admin_print_styles', 'print_emoji_styles');
 	
 		//remove version info from head and feeds
 		    function complete_version_removal() {
 		    	return '';
 		    }
 		    add_filter('the_generator', 'complete_version_removal');
+
+	// 1.4 Disable WP REST API requests for logged out users
+
+		add_filter( 'rest_authentication_errors', function( $result ) {
+			if ( ! empty( $result ) ) {
+				return $result;
+			}
+			if ( ! is_user_logged_in() ) {
+				return new WP_Error( 'restx_logged_out', 'Sorry, you must be logged in to make a request.', array( 'status' => 401 ) );
+			}
+			return $result;
+		});
+
 
 /*****************2.0 TAXONOMIES*****************************/
 	// 2.1 registration code for academicdepartment taxonomy
@@ -412,6 +432,11 @@ add_filter( 'image_downsize', 'ksas_responsive_images', 1, 3 );
 	}
 	add_action('widgets_init', 'unregister_default_wp_widgets', 1);
 
+	//***5.1 Eliminate Auto-Linking of Image
+	//***http://wordpress.org/support/topic/insert-image-default-to-no-link
+ 
+update_option('image_default_link_type','none');
+
 /*****************6.0 CHANGE POSTS LABELS TO NEWS*****************************/
 	function change_post_menu_label() {
 		global $menu;
@@ -688,7 +713,7 @@ add_filter( 'image_downsize', 'ksas_responsive_images', 1, 3 );
 		      // add spacing to the title based on the depth
 		      $item->title = str_repeat("&nbsp;", $depth * 4).$item->title;
 	
-			//deleted '&' on $output; TG 8-13-2014
+				//deleted '&' on $output; TG 8-13-2014
 		      parent::start_el($output, $item, $depth, $args);
 		
 		      // no point redefining this method too, we just replace the li tag...
@@ -768,8 +793,7 @@ function submenu_limit( $items, $args ) {
     if ( empty($args->submenu) )
         return $items;
 
-    $filter_object_list = wp_filter_object_list( $items, array( 'title' => $args->submenu ), 'and', 'ID' );
-    $parent_id = array_pop( $filter_object_list );
+    $parent_id = array_pop( wp_filter_object_list( $items, array( 'title' => $args->submenu ), 'and', 'ID' ) );
     $children  = submenu_get_children_ids( $parent_id, $items );
 
     foreach ( $items as $key => $item ) {
@@ -780,6 +804,7 @@ function submenu_limit( $items, $args ) {
 
     return $items;
 }
+
 function submenu_get_children_ids( $id, $items ) {
 
     $ids = wp_filter_object_list( $items, array( 'menu_item_parent' => $id ), 'and', 'ID' );
@@ -933,12 +958,12 @@ function submenu_get_children_ids( $id, $items ) {
 		}
 		add_filter('mce_buttons_2', 'my_mce_buttons_2');
 
-	//12.2 Keep html attributes
+   //12.2 Keep html attributes
 		add_action( 'after_setup_theme', 'x_kses_allow_data_attributes_on_links' );
 		function x_kses_allow_data_attributes_on_links() {
 		  global $allowedposttags;
 
-		    $tags = array( 'a' );
+		    $tags = array( 'dl' );
 		    $new_attributes = array(
 		        'data-accordion' => array(),
 		        'data-tab' => array(),
@@ -955,9 +980,8 @@ function submenu_get_children_ids( $id, $items ) {
 		    if ( ! isset( $options['extended_valid_elements'] ) ) 
 		        $options['extended_valid_elements'] = ''; 
 
-		    $options['extended_valid_elements'] .= ',a[data-accordion|data-tab|class|id|style|href]';
+		    $options['extended_valid_elements'] .= ',dl[data-accordion|data-tab|class|id|style|href]';
 
 		    return $options; 
 		}
-		
 ?>
