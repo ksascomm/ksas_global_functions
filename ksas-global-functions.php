@@ -95,15 +95,15 @@ License: GPL2
 
 	// 1.4 Disable WP REST API requests for logged out users
 
-		add_filter( 'rest_authentication_errors', function( $result ) {
-			if ( ! empty( $result ) ) {
-				return $result;
-			}
-			if ( ! is_user_logged_in() ) {
-				return new WP_Error( 'restx_logged_out', 'Sorry, you must be logged in to make a request.', array( 'status' => 401 ) );
-			}
-			return $result;
-		});
+		//add_filter( 'rest_authentication_errors', function( $result ) {
+		//	if ( ! empty( $result ) ) {
+		//		return $result;
+		//	}
+		//	if ( ! is_user_logged_in() ) {
+		//		return new WP_Error( 'restx_logged_out', 'Sorry, you must be logged in to make a request.', array( 'status' => 401 ) );
+		//	}
+		//	return $result;
+//		});
 
 
 /*****************2.0 TAXONOMIES*****************************/
@@ -651,9 +651,9 @@ update_option('image_default_link_type','none');
 					$classes = empty( $item->classes ) ? array() : (array) $item->classes;
 					
 					$class_names .= join( ' ', apply_filters( 'nav_menu_css_class', array_filter( $classes ), $item ) );
-					$class_names = ' class="'. esc_attr( $class_names ) . ' page-id-' . esc_attr( $item->object_id ) .'"';
+					$class_names = ' class="'. esc_attr( $class_names ) . 'page-id-' . esc_attr( $item->object_id ) .'"';
 		           
-					$output .= $indent . '<li id="menu-item-'. $item->ID . '"' . $value . $class_names .'>';
+					$output .= $indent . '<li id="menu-item-'. $item->ID . '"' . $value . $class_names .'role="menuitem">';
 		           
 		
 		           	$attributes  = ! empty( $item->attr_title ) ? ' title="'  . esc_attr( $item->attr_title ) .'"' : '';
@@ -676,7 +676,7 @@ update_option('image_default_link_type','none');
 		            }
 		            
 		function start_lvl(&$output, $depth = 0, $args = array()) {
-			$output .= "\n<ul class=\"flyout up\">\n";
+			$output .= "\n<ul class=\"flyout up\" role=\"menu\">\n";
 		}
 		            
 		      	function display_element( $element, &$children_elements, $max_depth, $depth=0, $args, &$output )
@@ -693,7 +693,7 @@ update_option('image_default_link_type','none');
 		
 		// Add a class to the wp_page_menu fallback
 		function foundation_page_menu_class($ulclass) {
-			return preg_replace('/<ul>/', '<ul class="nav-bar">', $ulclass, 1);
+			return preg_replace('/<ul>/', '<ul class="nav-bar" role="navigation">', $ulclass, 1);
 		}
 		
 		add_filter('wp_page_menu','foundation_page_menu_class');
@@ -753,6 +753,8 @@ update_option('image_default_link_type','none');
 		}
 		add_filter('nav_menu_css_class', 'ksasaca_css_attributes_filter', 100, 1);
 		add_filter('page_css_class', 'ksasaca_css_attributes_filter', 100, 1);
+		add_filter('nav_menu_item_id', 'ksasaca_css_attributes_filter', 100, 1);
+
 	//***9.4 Menu Walker for breadcrumbs
 		class flagship_bread_crumb extends Walker{
 		    var $tree_type = array( 'post_type', 'taxonomy', 'custom' );
@@ -780,42 +782,43 @@ update_option('image_default_link_type','none');
 		            $attributes .= ! empty( $item->url )        ? ' href="'   . esc_attr( $item->url        ) .'"' : '';
 		
 		            //Add to the HTML output
-		            $output .= '<li><a'. $attributes .'>'.$title.'</a></li>';
+		            $output .= '<li role="menuitem"><a'. $attributes .'>'.$title.'</a></li>';
 		        }
 		    }
 		}
 		
 	//***9.5 Menu Walker for Tertiary links
-add_filter( 'wp_nav_menu_objects', 'submenu_limit', 10, 2 );
+		add_filter( 'wp_nav_menu_objects', 'submenu_limit', 10, 2 );
 
-function submenu_limit( $items, $args ) {
+		function submenu_limit( $items, $args ) {
 
-    if ( empty($args->submenu) )
-        return $items;
+		    if ( empty($args->submenu) )
+		        return $items;
 
-    $parent_id = array_pop( wp_filter_object_list( $items, array( 'title' => $args->submenu ), 'and', 'ID' ) );
-    $children  = submenu_get_children_ids( $parent_id, $items );
+		    $filter_object_list = wp_filter_object_list( $items, array( 'title' => $args->submenu ), 'and', 'ID' );
+		    $parent_id = array_pop( $filter_object_list );
+		    $children  = submenu_get_children_ids( $parent_id, $items );
 
-    foreach ( $items as $key => $item ) {
+		    foreach ( $items as $key => $item ) {
 
-        if ( ! in_array( $item->ID, $children ) )
-            unset($items[$key]);
-    }
+		        if ( ! in_array( $item->ID, $children ) )
+		            unset($items[$key]);
+		    }
 
-    return $items;
-}
+		    return $items;
+		}
 
-function submenu_get_children_ids( $id, $items ) {
+		function submenu_get_children_ids( $id, $items ) {
 
-    $ids = wp_filter_object_list( $items, array( 'menu_item_parent' => $id ), 'and', 'ID' );
+		    $ids = wp_filter_object_list( $items, array( 'menu_item_parent' => $id ), 'and', 'ID' );
 
-    foreach ( $ids as $id ) {
+		    foreach ( $ids as $id ) {
 
-        $ids = array_merge( $ids, submenu_get_children_ids( $id, $items ) );
-    }
+		        $ids = array_merge( $ids, submenu_get_children_ids( $id, $items ) );
+		    }
 
-    return $ids;
-}
+		    return $ids;
+		}
 
 	//***9.6 Menu Walker to add page IDs as classes
 		class page_id_classes extends Walker_Nav_Menu{
@@ -835,7 +838,7 @@ function submenu_get_children_ids( $id, $items ) {
 					$class_names .= join( ' ', apply_filters( 'nav_menu_css_class', array_filter( $classes ), $item ) );
 					$class_names = ' class="'. esc_attr( $class_names ) . ' page-id-' . esc_attr( $item->object_id ) .'"';
 		           
-					$output .= $indent . '<li id="menu-item-'. $item->ID . '"' . $value . $class_names .'>';
+					$output .= $indent . '<li id="menu-item-'. $item->ID . '"' . $value . $class_names .' role="menuitem">';
 	
 	           $attributes  = ! empty( $item->attr_title )   ? ' title="'  . esc_attr( $item->attr_title ) .'"' : '';
 	           $attributes .= ! empty( $item->target ) ? ' target="'  . esc_attr( $item>-target     ) .'"' : '';
@@ -853,7 +856,7 @@ function submenu_get_children_ids( $id, $items ) {
 	            
 	                        
 	                }
-	      }
+	      } 
 
 /*******************10.0 SHORTCODES & WYSIWYG******************/
 	//***10.1 Custom Menu Shortcode
