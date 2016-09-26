@@ -50,6 +50,8 @@ License: GPL2
 	12.0 WYSIWYG Mods
 		12.1 Add sub and sup buttons
 		12.2 Keep html attributes
+	13.0 Login Screen
+	14.0 Toolbar Changes	
 /*****************1.0 SECURITY AND PERFORMANCE FUNCTIONS*****************************/
 	// 1.1 Prevent login errors - attacker prevention
 		add_filter('login_errors', create_function('$a', "return null;"));
@@ -93,6 +95,7 @@ License: GPL2
 		    }
 		    add_filter('the_generator', 'complete_version_removal');
 
+
 	// 1.4 Disable WP REST API requests for logged out users
 
 		//add_filter( 'rest_authentication_errors', function( $result ) {
@@ -103,8 +106,7 @@ License: GPL2
 		//		return new WP_Error( 'restx_logged_out', 'Sorry, you must be logged in to make a request.', array( 'status' => 401 ) );
 		//	}
 		//	return $result;
-//		});
-
+	//	});
 
 /*****************2.0 TAXONOMIES*****************************/
 	// 2.1 registration code for academicdepartment taxonomy
@@ -651,7 +653,7 @@ update_option('image_default_link_type','none');
 					$classes = empty( $item->classes ) ? array() : (array) $item->classes;
 					
 					$class_names .= join( ' ', apply_filters( 'nav_menu_css_class', array_filter( $classes ), $item ) );
-					$class_names = ' class="'. esc_attr( $class_names ) . 'page-id-' . esc_attr( $item->object_id ) .'"';
+					$class_names = ' class="'. esc_attr( $class_names ) . ' page-id-' . esc_attr( $item->object_id ) .'"';
 		           
 					$output .= $indent . '<li id="menu-item-'. $item->ID . '"' . $value . $class_names .'role="menuitem">';
 		           
@@ -662,7 +664,7 @@ update_option('image_default_link_type','none');
 		           	$attributes .= ! empty( $item->url )        ? ' href="'   . esc_attr( $item->url        ) .'"' : '';
 		           	// if the item has children add these two attributes to the anchor tag
 		           	if ( $args->has_children ) {
-						$attributes .= 'data-toggle="dropdown"';
+						$attributes .= 'aria-haspopup="true" data-toggle="dropdown"';
 					}
 		
 		            $item_output = $args->before;
@@ -676,7 +678,7 @@ update_option('image_default_link_type','none');
 		            }
 		            
 		function start_lvl(&$output, $depth = 0, $args = array()) {
-			$output .= "\n<ul class=\"flyout up\" role=\"menu\">\n";
+			$output .= "\n<ul class=\"flyout up\" aria-hidden=\"true\" aria-label=\"submenu\">\n";
 		}
 		            
 		      	function display_element( $element, &$children_elements, $max_depth, $depth=0, $args, &$output )
@@ -753,8 +755,7 @@ update_option('image_default_link_type','none');
 		}
 		add_filter('nav_menu_css_class', 'ksasaca_css_attributes_filter', 100, 1);
 		add_filter('page_css_class', 'ksasaca_css_attributes_filter', 100, 1);
-		add_filter('nav_menu_item_id', 'ksasaca_css_attributes_filter', 100, 1);
-
+		
 	//***9.4 Menu Walker for breadcrumbs
 		class flagship_bread_crumb extends Walker{
 		    var $tree_type = array( 'post_type', 'taxonomy', 'custom' );
@@ -987,4 +988,146 @@ update_option('image_default_link_type','none');
 
 		    return $options; 
 		}
+
+
+	//12.3 Remove unneeded buttons that produce inline styles
+
+		function myplugin_tinymce_buttons($buttons)
+		 {
+			//Remove unneeded buttons from first WYSIWYG line
+			$remove = array(
+				'strikethrough', 
+				'alignleft', 
+				'aligncenter', 
+				'alignright',
+				'hr',
+				'wp_more');
+
+			return array_diff($buttons,$remove);
+		 }
+		add_filter('mce_buttons','myplugin_tinymce_buttons');
+
+		function myplugin_tinymce_buttons2($buttons)
+		 {
+			//Remove unneeded buttons from second WYSIWYG line
+			$remove = array(
+				'underline',
+				'alignjustify',
+				'forecolor',
+				'outdent', 
+				'indent');
+
+			return array_diff($buttons,$remove);
+		 }
+		add_filter('mce_buttons_2','myplugin_tinymce_buttons2');
+
+
+		/* ======================================================================
+		 * Disable-Inline-Styles.php
+		 * Removes inline styles and other coding junk added by the WYSIWYG editor.
+		 * Script by Chris Ferdinandi - http://gomakethings.com
+		 * ====================================================================== */
+
+		add_filter( 'the_content', 'clean_post_content' );
+		function clean_post_content($content) {
+
+		    // Remove inline styling
+		    $content = preg_replace('/(<[^>]+) style=".*?"/i', '$1', $content);
+
+		    // Remove font tag
+		    $content = preg_replace('/<font[^>]+>/', '', $content);
+
+		    // Remove empty tags
+		    $post_cleaners = array('<p></p>' => '', '<p> </p>' => '', '<p>&nbsp;</p>' => '', '<span></span>' => '', '<span> </span>' => '', '<span>&nbsp;</span>' => '', '<span>' => '', '</span>' => '', '<font>' => '', '</font>' => '');
+		    $content = strtr($content, $post_cleaners);
+
+		    return $content;
+		}
+
+/*******************13.0 Login Screen******************/	
+
+//show screen if user is attempting to login by bypassing JHED
+function wps_login_message( $message ) {
+    if ( empty($message) ){
+        return "<p class='message'><strong>NOTE:</strong> We are currently reconfiguring Shibboleth. <br><br>Please <strong>DO NOT</strong> attempt to either login with your JHED or click <em>Lost Your Password?</em> below. You will be able to log in with your JHED shortly. <br><br>If edits to your website need to be made, please use our <a href='http://sites.krieger.jhu.edu/forms/request-service/'>web service request form</a>. </p>";
+    } else {
+        return $message;
+    }
+}
+add_filter( 'login_message', 'wps_login_message' );
+
+
+/*******************14.0 Toolbar Changes******************/	
+
+//remove comments node
+function my_admin_bar_render() {
+    global $wp_admin_bar;
+    $wp_admin_bar->remove_menu('comments');
+}
+add_action( 'wp_before_admin_bar_render', 'my_admin_bar_render' );
+
+
+// Add links to sites.krieger documentation
+
+function custom_toolbar_link($wp_admin_bar) {
+	$args = array(
+		'id' => 'webservices',
+		'title' => __('<img src="'.get_bloginfo('wpurl').'/wp-content/themes/ksas_flagship_f5/assets/images/shield.png" style="height:25px;vertical-align:middle;margin-right:5px" alt="JHU Shield" title="KSAS Web Services" />Web Services & Documentation &#9662;' ),
+		'href' => 'http://sites.krieger.jhu.edu', 
+		'meta' => array(
+			'target' => '_blank',
+			'class' => 'webservices', 
+			'title' => 'KSAS Web Services'
+			)
+	);
+	$wp_admin_bar->add_node($args);
+
+// first child link 
+	
+	$args = array(
+		'id' => 'wordpress-ksas',
+		'title' => 'WordPress & KSAS', 
+		'href' => 'http://sites.krieger.jhu.edu/wordpress-ksas/',
+		'parent' => 'webservices',
+		'meta' => array(
+			'target' => '_blank',
+			'class' => 'wordpress-ksas', 
+			'title' => 'WordPress & KSAS'
+			)
+	);
+	$wp_admin_bar->add_node($args);
+
+// second child link
+	$args = array(
+		'id' => 'writing-web',
+		'title' => 'Writing for the Web', 
+		'href' => 'http://sites.krieger.jhu.edu/guidelines/',
+		'parent' => 'webservices', 
+		'meta' => array(
+			'target' => '_blank',
+			'class' => 'writing-web', 
+			'title' => 'Writing for the Web'
+			)
+	);
+	$wp_admin_bar->add_node($args);
+
+// third child link
+	$args = array(
+		'id' => 'request-support',
+		'title' => 'Request Support', 
+		'href' => 'http://sites.krieger.jhu.edu/forms/request-service/',
+		'parent' => 'webservices', 
+		'meta' => array(
+			'target' => '_blank',
+			'class' => 'request-support', 
+			'title' => 'Request Support'
+			)
+	);
+	$wp_admin_bar->add_node($args);	
+
+}
+
+add_action('admin_bar_menu', 'custom_toolbar_link', 999);
+
+
 ?>
