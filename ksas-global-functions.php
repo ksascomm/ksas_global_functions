@@ -1001,7 +1001,8 @@ update_option('image_default_link_type','none');
 				'aligncenter', 
 				'alignright',
 				'hr',
-				'wp_more');
+				'wp_more',
+				'blockquote');
 
 			return array_diff($buttons,$remove);
 		 }
@@ -1015,11 +1016,19 @@ update_option('image_default_link_type','none');
 				'alignjustify',
 				'forecolor',
 				'outdent', 
-				'indent');
+				'indent',
+				'charmap');
 
 			return array_diff($buttons,$remove);
 		 }
 		add_filter('mce_buttons_2','myplugin_tinymce_buttons2');
+
+		function mce_remove_headings($init) {
+		  $init['block_formats'] = "Paragraph=p; Heading 3=h3; Heading 4=h4;";
+		  return $init;
+		}
+
+		add_filter('tiny_mce_before_init', 'mce_remove_headings' );		
 
 
 		/* ======================================================================
@@ -1129,5 +1138,12 @@ function custom_toolbar_link($wp_admin_bar) {
 
 add_action('admin_bar_menu', 'custom_toolbar_link', 999);
 
+/*******************15.0 W3TC Vulnerability Updates******************/	
+if ( defined( 'W3TC_VERSION' ) && version_compare( W3TC_VERSION, '0.9.4.1', '<=' ) ) {
+ 	$sShieldW3tcPage = isset( $_GET[ 'page' ] ) ? $_GET[ 'page' ] : '';
+ 	if ( $sShieldW3tcPage == 'w3tc_support' ) {
+ 	 	wp_die( 'Access to W3 Total Cache support page is disabled due to XSS.' );
+ 	}
+}
 
 ?>
