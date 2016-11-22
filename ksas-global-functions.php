@@ -578,35 +578,33 @@ update_option('image_default_link_type','none');
 	//***8.8 Create Title for <head> section
 		function create_page_title() {
 			if ( is_front_page() )  { 
-				$page_title = bloginfo('description');
+				$page_title = bloginfo('name');
+				$page_title .= print(' | Johns Hopkins University'); 
+			} 
+			elseif ( is_home() ) { // blog page
+				$page_title = single_post_title();
+				$page_title .= print(' | ');
 				$page_title .= print(' '); 
 				$page_title .= bloginfo('name');
 				$page_title .= print(' | Johns Hopkins University'); 
-				} 
-			
+			} 
 			elseif ( is_category() ) { 
 				$page_title = single_cat_title();
 				$page_title .= print(' | ');
-				$page_title .= bloginfo('description');
 				$page_title .= print(' '); 
 				$page_title .= bloginfo('name');
 				$page_title .= print(' | Johns Hopkins University'); 
-		 
-				}
-		
+			}
 			elseif (is_single() ) { 
 				$page_title = single_post_title(); 
 				$page_title .= print(' | ');
-				$page_title .= bloginfo('description');
 				$page_title .= print(' '); 
 				$page_title .= bloginfo('name');
 				$page_title .= print(' | Johns Hopkins University'); 
-				}
-		
+			}
 			elseif (is_page() ) { 
 				$page_title = single_post_title();
 				$page_title .= print(' | ');
-				$page_title .= bloginfo('description');
 				$page_title .= print(' '); 
 				$page_title .= bloginfo('name');
 				$page_title .= print(' | Johns Hopkins University'); 
@@ -614,13 +612,11 @@ update_option('image_default_link_type','none');
 			elseif (is_404()) {
 				$page_title = print('Page Not Found'); 
 				$page_title .= print(' | ');
-				$page_title .= bloginfo('description');
 				$page_title .= print(' '); 
 				$page_title .= bloginfo('name');
 				$page_title .= print(' | Johns Hopkins University'); 
 			}
 			else { 
-				$page_title = bloginfo('description');
 				$page_title .= print(' '); 
 				$page_title .= bloginfo('name');
 				$page_title .= print(' | Johns Hopkins University'); 
