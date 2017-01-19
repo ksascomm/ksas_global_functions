@@ -616,6 +616,13 @@ update_option('image_default_link_type','none');
 				$page_title .= bloginfo('name');
 				$page_title .= print(' | Johns Hopkins University'); 
 			}
+			elseif (is_tax('bbtype')) {
+				$page_title = single_tag_title();
+				$page_title .= print(' | ');
+				$page_title .= print(' '); 
+				$page_title .= bloginfo('name');
+				$page_title .= print(' | Johns Hopkins University'); 
+			}
 			else { 
 				$page_title .= print(' '); 
 				$page_title .= bloginfo('name');
@@ -664,7 +671,7 @@ update_option('image_default_link_type','none');
 					}
 		
 		            $item_output = $args->before;
-		            $item_output .= '<a'. $attributes .'>';
+		            $item_output .= '<a' . $attributes . 'aria-label="'. $item->title .' Page-' . $item->ID . '">';
 		            $item_output .= $args->link_before .apply_filters( 'the_title', $item->title, $item->ID );
 		            $item_output .= $args->link_after;
 		            $item_output .= '</a>';
@@ -861,7 +868,7 @@ update_option('image_default_link_type','none');
 		extract( shortcode_atts( 
 			array(  
 				'menu'            => '', 
-				'container'       => 'nav', 
+				'container'       => 'div', 
 				'container_class' => '', 
 				'container_id'    => '', 
 				'menu_class'      => 'menu', 
@@ -1073,8 +1080,12 @@ add_action( 'wp_before_admin_bar_render', 'my_admin_bar_render' );
 
 
 // Add links to sites.krieger documentation
+add_action('admin_bar_menu', 'custom_toolbar_link', 999);
 
 function custom_toolbar_link($wp_admin_bar) {
+	if ( is_super_admin() )
+        return;
+    
 	$args = array(
 		'id' => 'webservices',
 		'title' => __('<img src="'.get_bloginfo('wpurl').'/wp-content/themes/ksas_flagship_f5/assets/images/shield.png" style="height:25px;vertical-align:middle;margin-right:5px" alt="JHU Shield" title="KSAS Web Services" />Web Services & Documentation &#9662;' ),
@@ -1132,7 +1143,6 @@ function custom_toolbar_link($wp_admin_bar) {
 
 }
 
-add_action('admin_bar_menu', 'custom_toolbar_link', 999);
 
 /*******************15.0 W3TC Vulnerability Updates******************/	
 if ( defined( 'W3TC_VERSION' ) && version_compare( W3TC_VERSION, '0.9.4.1', '<=' ) ) {
