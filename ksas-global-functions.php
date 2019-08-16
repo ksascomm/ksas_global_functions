@@ -886,19 +886,6 @@ update_option('image_default_link_type','none');
 		    return $content;
 		}
 
-/*******************13.0 Login Screen******************/	
-
-//show screen if user is attempting to login by bypassing JHED
-function wps_login_message( $message ) {
-    if ( empty($message) ){
-        return "<p class='message'><strong>NOTE:</strong> We are currently reconfiguring Shibboleth. <br><br>Please <strong>DO NOT</strong> attempt to either login with your JHED or click <em>Lost Your Password?</em> below. You will be able to log in with your JHED shortly. <br><br>If edits to your website need to be made, please use our <a href='http://sites.krieger.jhu.edu/forms/request-service/'>web service request form</a>. </p>";
-    } else {
-        return $message;
-    }
-}
-add_filter( 'login_message', 'wps_login_message' );
-
-
 /*******************14.0 Toolbar Changes******************/	
 
 //remove comments node
