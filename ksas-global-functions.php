@@ -3,9 +3,9 @@
 Plugin Name: KSAS Global Functions
 Plugin URI: http://krieger.jhu.edu/news/communications/web/plugins/global
 Description: This plugin should be network activated.  Provides functions for creating the Academic Department and Affiliation Taxonomies, formats meta boxes, provides upload capability, change "Posts" labels to "News", removes unnecessary classes from navigation menus, removes unwanted widgets, responsive images (remove width/height attributes) function, add custom post type capabilities for user roles. and global security needs.
-Version: 1.1
+Version: 2.0
 Author: Cara Peckens
-Author URI: mailto:cpeckens@jhu.edu
+Author URI: mailto:ksasweb@jhu.edu
 License: GPL2
 */
 
@@ -51,39 +51,21 @@ License: GPL2
 		12.1 Add sub and sup buttons
 		12.2 Keep html attributes
 	13.0 Login Screen
-	14.0 Toolbar Changes	
+	14.0 Toolbar Changes
+	15.0 Disable PDF Previews
 /*****************1.0 SECURITY AND PERFORMANCE FUNCTIONS*****************************/
-	// 1.1 Prevent login errors - attacker prevention
-		add_filter('login_errors', create_function('$a', "return null;"));
-	
-	// 1.2 Block malicious queries - Based on http://perishablepress.com/press/2009/12/22/protect-wordpress-against-malicious-url-requests/
-		global $user_ID;
-		
-		if($user_ID) {
-		  if(!current_user_can('level_10')) {
-		    if (strlen($_SERVER['REQUEST_URI']) > 255 ||
-		      strpos($_SERVER['REQUEST_URI'], "eval(") ||
-		      strpos($_SERVER['REQUEST_URI'], "CONCAT") ||
-		      strpos($_SERVER['REQUEST_URI'], "UNION+SELECT") ||
-		      strpos($_SERVER['REQUEST_URI'], "base64")) {
-		        @header("HTTP/1.1 414 Request-URI Too Long");
-			@header("Status: 414 Request-URI Too Long");
-			@header("Connection: Close");
-			@exit;
-		    }
-		  }
-		}
 
 	// 1.3 remove junk from head
 		remove_action('wp_head', 'rsd_link');
 		remove_action('wp_head', 'wp_generator');
+		remove_action('wp_head', 'wp_shortlink_wp_head');
 		remove_action('wp_head', 'feed_links', 2);
 		remove_action('wp_head', 'index_rel_link');
 		remove_action('wp_head', 'wlwmanifest_link');
 		remove_action('wp_head', 'feed_links_extra', 3);
 		remove_action('wp_head', 'start_post_rel_link', 10, 0);
 		remove_action('wp_head', 'parent_post_rel_link', 10, 0);
-		remove_action('wp_head', 'adjacent_posts_rel_link', 10, 0);
+		remove_action('wp_head', 'adjacent_posts_rel_link_wp_head', 10);
 		remove_action('wp_head', 'print_emoji_detection_script', 7);
 		remove_action('admin_print_scripts', 'print_emoji_detection_script');
 		remove_action('wp_print_styles', 'print_emoji_styles');
@@ -95,193 +77,12 @@ License: GPL2
 		    }
 		    add_filter('the_generator', 'complete_version_removal');
 
-
-	// 1.4 Disable WP REST API requests for logged out users
-
-		//add_filter( 'rest_authentication_errors', function( $result ) {
-		//	if ( ! empty( $result ) ) {
-		//		return $result;
-		//	}
-		//	if ( ! is_user_logged_in() ) {
-		//		return new WP_Error( 'restx_logged_out', 'Sorry, you must be logged in to make a request.', array( 'status' => 401 ) );
-		//	}
-		//	return $result;
-	//	});
-
 /*****************2.0 TAXONOMIES*****************************/
-	// 2.1 registration code for academicdepartment taxonomy
-		function register_academicdepartment_tax() {
-			$labels = array(
-				'name' 					=> _x( 'Departments', 'taxonomy general name' ),
-				'singular_name' 		=> _x( 'Department', 'taxonomy singular name' ),
-				'add_new' 				=> _x( 'Add New Department', 'Department'),
-				'add_new_item' 			=> __( 'Add New Department' ),
-				'edit_item' 			=> __( 'Edit Department' ),
-				'new_item' 				=> __( 'New Department' ),
-				'view_item' 			=> __( 'View Department' ),
-				'search_items' 			=> __( 'Search Departments' ),
-				'not_found' 			=> __( 'No Department found' ),
-				'not_found_in_trash' 	=> __( 'No Department found in Trash' ),
-			);
-			
-			$pages = array('courses','people','profile','post', 'studyfields', 'deptextra');
-						
-			$args = array(
-				'labels' 			=> $labels,
-				'singular_label' 	=> __('Department'),
-				'public' 			=> true,
-				'show_ui' 			=> true,
-				'hierarchical' 		=> true,
-				'show_tagcloud' 	=> false,
-				'show_in_nav_menus' => false,
-				'rewrite' 			=> array('slug' => 'department', 'with_front' => false ),
-			 );
-			register_taxonomy('academicdepartment', $pages, $args);
-		}
-		add_action('init', 'register_academicdepartment_tax');
-	
-	// 2.2 Prepopulate choices for academicdepartment taxonomy
-function check_academicdepartment_terms(){
- 
-        // see if we already have populated any terms
-    $term = get_terms( 'academicdepartment', array( 'hide_empty' => false ) );
- 
-    // if no terms then lets add our terms
-    if( empty( $term ) ){
-        $terms = define_academicdepartment_terms();
-        foreach( $terms as $term ){
-            if( !term_exists( $term['name'], 'academicdepartment' ) ){
-                wp_insert_term( $term['name'], 'academicdepartment', array( 'slug' => $term['slug'] ) );
-            }
-        }
-    }
-}
 
-add_action( 'init', 'check_academicdepartment_terms' );
-
-function define_academicdepartment_terms(){
- 
-$terms = array(
-	'0' => array( 'name' => 'Advanced Academic Programs','slug' => 'aap'),
-	'1' => array( 'name' => 'Anthropology','slug' => 'anthropology'),
-	'2' => array( 'name' => 'Biology','slug' => 'bio'),
-	'3' => array( 'name' => 'Biophysics','slug' => 'biophysics'),
-	'4' => array( 'name' => 'Chemistry','slug' => 'chemistry'),
-	'5' => array( 'name' => 'Classics','slug' => 'classics'),
-	'6' => array( 'name' => 'Cognitive Science','slug' => 'cogsci'),
-	'7' => array( 'name' => 'Earth and Planetary Sciences','slug' => 'eps'),
-	'8' => array( 'name' => 'Economics','slug' => 'econ'),
-	'9' => array( 'name' => 'English','slug' => 'english'),
-	'10' => array( 'name' => 'German and Romance Languages','slug' => 'grll'),
-	'11' => array( 'name' => 'History','slug' => 'history'),
-	'12' => array( 'name' => 'History of Art','slug' => 'arthist'),
-	'13' => array( 'name' => 'History of Science and Technology','slug' => 'host'),
-	'14' => array( 'name' => 'Humanities','slug' => 'humanities'),
-	'15' => array( 'name' => 'Mathematics','slug' => 'math'),
-	'16' => array( 'name' => 'Near Eastern Studies','slug' => 'neareast'),
-	'17' => array( 'name' => 'Philosophy','slug' => 'philosophy'),
-	'18' => array( 'name' => 'Physics and Astronomy','slug' => 'physics'),
-	'19' => array( 'name' => 'Political Science','slug' => 'polisci'),
-	'20' => array( 'name' => 'Psychological and Brain Sciences','slug' => 'pbs'),
-	'21' => array( 'name' => 'Sociology','slug' => 'soc'),
-	'22' => array( 'name' => 'Writing Seminars','slug' => 'writing'),
-	'23' => array( 'name' => 'Whiting School of Engineering','slug' => 'wse'),
-    );
- 
-    return $terms;
-}
-	// 2.3 registration code for affiliation taxonomy
-		function register_affiliation_tax() {
-			$labels = array(
-				'name' 					=> _x( 'Affiliations', 'taxonomy general name' ),
-				'singular_name' 		=> _x( 'Affiliation', 'taxonomy singular name' ),
-				'add_new' 				=> _x( 'Add New Affiliation', 'Affiliation'),
-				'add_new_item' 			=> __( 'Add New Affiliation' ),
-				'edit_item' 			=> __( 'Edit Affiliation' ),
-				'new_item' 				=> __( 'New Affiliation' ),
-				'view_item' 			=> __( 'View Affiliation' ),
-				'search_items' 			=> __( 'Search Affiliations' ),
-				'not_found' 			=> __( 'No Affiliation found' ),
-				'not_found_in_trash' 	=> __( 'No Affiliation found in Trash' ),
-			);
-			
-			$pages = array('people','post', 'studyfields', 'deptextra');
-						
-			$args = array(
-				'labels' 			=> $labels,
-				'singular_label' 	=> __('Affiliation'),
-				'public' 			=> true,
-				'show_ui' 			=> true,
-				'hierarchical' 		=> true,
-				'show_tagcloud' 	=> false,
-				'show_in_nav_menus' => false,
-				'rewrite' 			=> array('slug' => 'affiliation', 'with_front' => false ),
-			 );
-			register_taxonomy('affiliation', $pages, $args);
-		}
-		add_action('init', 'register_affiliation_tax');
-	// 2.4 Prepopulate choices for affiliation taxonomy
-function check_affiliation_terms(){
- 
-        // see if we already have populated any terms
-    $term = get_terms( 'affiliation', array( 'hide_empty' => false ) );
- 
-    // if no terms then lets add our terms
-    if( empty( $term ) ){
-        $terms = define_affiliation_terms();
-        foreach( $terms as $term ){
-            if( !term_exists( $term['name'], 'affiliation' ) ){
-                wp_insert_term( $term['name'], 'affiliation', array( 'slug' => $term['slug'] ) );
-            }
-        }
-    }
-}
-
-add_action( 'init', 'check_affiliation_terms' );
-
-function define_affiliation_terms(){
- 
-$terms = array(
-	'0' => array( 'name' => 'Advanced Media Studies','slug' => 'cams'),
-	'1' => array( 'name' => 'Africana Studies','slug' => 'africana'),
-	'2' => array( 'name' => 'Archaeology','slug' => 'archaeology'),	
-	'3' => array( 'name' => 'Behavioral Biology','slug' => 'behavbio'),
-	'4' => array( 'name' => 'China STEM','slug' => 'chinastem'),
-	'5' => array( 'name' => 'Dance','slug' => 'dance'),
-	'6' => array( 'name' => 'Engineering','slug' => 'engineering'),
-	'7' => array( 'name' => 'East Asian','slug' => 'eastasian'),
-	'8' => array( 'name' => 'Embryology','slug' => 'embryo'),
-	'9' => array( 'name' => 'Expository Writing','slug' => 'ewp'),
-	'10' => array( 'name' => 'Film and Media','slug' => 'film'),
-	'11' => array( 'name' => 'Financial Economics','slug' => 'cfe'),
-	'12' => array( 'name' => 'Global Studies','slug' => 'arrighi'),
-	'13' => array( 'name' => 'International Studies','slug' => 'international'),
-	'14' => array( 'name' => 'Jewish Studies','slug' => 'jewish'),
-	'15' => array( 'name' => 'Language Education','slug' => 'cledu'),
-	'16' => array( 'name' => 'Latin American Studies','slug' => 'plas'),
-	'17' => array( 'name' => 'Mind Brain Institute','slug' => 'mindbrain'),
-	'18' => array( 'name' => 'Modern German Thought','slug' => 'maxkade'),
-	'19' => array( 'name' => 'Museums and Society','slug' => 'museums'),
-	'20' => array( 'name' => 'Music','slug' => 'music'),
-	'21' => array( 'name' => 'Neuroscience','slug' => 'neuroscience'),
-	'22' => array( 'name' => 'Post-Bac Pre-Med','slug' => 'pbpm'),
-	'23' => array( 'name' => 'Pre-Law','slug' => 'prelaw'),
-	'24' => array( 'name' => 'Pre-Med','slug' => 'premed'),
-	'25' => array( 'name' => 'Premodern Europe','slug' => 'singleton'),
-	'26' => array( 'name' => 'Public Health','slug' => 'publichealth'),
-	'27' => array( 'name' => 'Quantum Matter','slug' => 'quantum'),
-	'28' => array( 'name' => 'Social Policy','slug' => 'socialpolicy'),
-	'29' => array( 'name' => 'Theatre Arts','slug' => 'theatre'),
-	'30' => array( 'name' => 'Visual Arts','slug' => 'visual'),
-	'31' => array( 'name' => 'Women Gender and Sexuality','slug' => 'wgs'),
-	'32' => array( 'name' => 'Writing Center','slug' => 'writingcenter'),
-    );
- 
-    return $terms;
-}
 
 /*****************3.0 CUSTOM POST TYPE UI FUNCTIONS*****************************/
-	//**NOTE** Check these functions when the Easy Content Types Plugin is updated 
+//**NOTE** Check these functions when the Easy Content Types Plugin is updated 
+//**NOTE** YOU NEED THESE FOR CPT UPLOADS TO WORK
 	function ecpt_export_ui_scripts() {
 	
 		global $ecpt_options;
@@ -389,36 +190,17 @@ $terms = array(
 if ((isset($_GET['post']) && (isset($_GET['action']) && $_GET['action'] == 'edit') ) || (strstr($_SERVER['REQUEST_URI'], 'wp-admin/post-new.php'))) {
 	add_action('admin_head', 'ecpt_export_ui_scripts');
 }
+
 /*****************4.0 RESPONSIVE IMAGES - REMOVES WIDTH/HEIGHT ATTRIBUTES FROM IMAGE INSERT*****************************/
-function ksas_responsive_images( $value = false, $id, $size ) {
-    if ( !wp_attachment_is_image($id) )
-        return false;
-
-    $img_url = wp_get_attachment_url($id);
-    $is_intermediate = false;
-    $img_url_basename = wp_basename($img_url);
-
-    // try for a new style intermediate size
-    if ( $intermediate = image_get_intermediate_size($id, $size) ) {
-        $img_url = str_replace($img_url_basename, $intermediate['file'], $img_url);
-        $is_intermediate = true;
-    }
-    elseif ( $size == 'thumbnail' ) {
-        // Fall back to the old thumbnail
-        if ( ($thumb_file = wp_get_attachment_thumb_file($id)) && $info = getimagesize($thumb_file) ) {
-            $img_url = str_replace($img_url_basename, wp_basename($thumb_file), $img_url);
-            $is_intermediate = true;
-        }
-    }
-
-    // We have the actual image size, but might need to further constrain it if content_width is narrower
-    if ( $img_url) {
-        return array( $img_url, 0, 0, $is_intermediate );
-    }
-    return false;
+function remove_image_size_attributes( $html ) {
+    return preg_replace( '/(width|height)="\d*"/', '', $html );
 }
-
-add_filter( 'image_downsize', 'ksas_responsive_images', 1, 3 );
+ 
+// Remove image size attributes from post thumbnails
+add_filter( 'post_thumbnail_html', 'remove_image_size_attributes' );
+ 
+// Remove image size attributes from images added to a WordPress post
+add_filter( 'image_send_to_editor', 'remove_image_size_attributes' );
 
 /*****************5.0 REMOVE UNWANTED WIDGETS*****************************/
 
@@ -466,10 +248,57 @@ update_option('image_default_link_type','none');
 	add_action( 'init', 'change_post_object_label' );
 	add_action( 'admin_menu', 'change_post_menu_label' );
 
-
 /*****************7.0 USER - ADD CUSTOM POST TYPE CAPABILITIES*****************************/
 
 /*****************8.0 THEME FUNCTIONS*****************************/
+
+	//***8.0 NEW Pagination (2017) ************/
+
+	function new_flagship_paging_nav() {
+		// Don't print empty markup if there's only one page.
+		if ( $GLOBALS['wp_query']->max_num_pages < 2 ) {
+			return;
+		}
+
+		$paged        = get_query_var( 'paged' ) ? intval( get_query_var( 'paged' ) ) : 1;
+		$pagenum_link = html_entity_decode( get_pagenum_link() );
+		$query_args   = array();
+		$url_parts    = explode( '?', $pagenum_link );
+
+		if ( isset( $url_parts[1] ) ) {
+			wp_parse_str( $url_parts[1], $query_args );
+		}
+
+		$pagenum_link = remove_query_arg( array_keys( $query_args ), $pagenum_link );
+		$pagenum_link = trailingslashit( $pagenum_link ) . '%_%';
+
+		$format  = $GLOBALS['wp_rewrite']->using_index_permalinks() && ! strpos( $pagenum_link, 'index.php' ) ? 'index.php/' : '';
+		$format .= $GLOBALS['wp_rewrite']->using_permalinks() ? user_trailingslashit( 'page/%#%', 'paged' ) : '?paged=%#%';
+
+		// Set up paginated links.
+		$links = paginate_links( array(
+			'base'     => $pagenum_link,
+			'format'   => $format,
+			'total'    => $GLOBALS['wp_query']->max_num_pages,
+			'current'  => $paged,
+			'mid_size' => 3,
+			'add_args' => array_map( 'urlencode', $query_args ),
+			'prev_text' => __( '&larr; Previous', 'new_flagship' ),
+			'next_text' => __( 'Next &rarr;', 'new_flagship' ),
+			'type'      => 'list',
+		) );
+
+		if ( $links ) :
+
+		?>
+		<nav class="navigation paging-navigation" role="navigation">
+			<h1 class="screen-reader-text"><?php _e( 'Posts navigation', 'new_flagship' ); ?></h1>
+				<?php echo $links; ?>
+		</nav><!-- .navigation -->
+		<?php
+		endif;
+	}
+
 	//***8.1 Pagination
 		function flagship_pagination($pages = '', $range = 2)
 		{  
@@ -530,7 +359,7 @@ update_option('image_default_link_type','none');
 			}
 		}
 		
-	//***8.4 Get page ID from page slug - Used to generate left side nav on some pages
+	//***8.4 Get page ID from page slug - Used in scripts-initiators.php
 		function ksas_get_page_id($page_name){
 			global $wpdb;
 			$page_name = $wpdb->get_var("SELECT ID FROM $wpdb->posts WHERE post_name = '".$page_name."'");
@@ -595,6 +424,13 @@ update_option('image_default_link_type','none');
 				$page_title .= bloginfo('name');
 				$page_title .= print(' | Johns Hopkins University'); 
 			}
+			elseif ( is_archive() ) { 
+				$page_title = the_archive_title();
+				$page_title .= print(' | ');
+				$page_title .= print(' '); 
+				$page_title .= bloginfo('name');
+				$page_title .= print(' | Johns Hopkins University'); 
+			}			
 			elseif (is_single() ) { 
 				$page_title = single_post_title(); 
 				$page_title .= print(' | ');
@@ -630,7 +466,38 @@ update_option('image_default_link_type','none');
 				} 
 			return $page_title;
 		}
-	//***8.9 Return the Parent's Title - Used with courses
+
+		/**
+		 * Filter the page title.
+		 *
+		 * Creates a nicely formatted and more specific title element text
+		 * for output in head of document, based on current view.
+		 *
+		 * @since Twenty Twelve 1.0
+		 *
+		 * @param string $title Default title text for current view.
+		 * @param string $sep Optional separator.
+		 * @return string Filtered title.
+		 */
+		function twentytwelve_wp_title( $title, $sep ) {
+			global $paged, $page;
+
+			if ( is_feed() )
+				return $title;
+
+			// Add the site name.
+			$title .= get_bloginfo( 'name' ) . ' ' . $sep . ' Johns Hopkins University';
+
+			// Add a page number if necessary.
+			if ( ( $paged >= 2 || $page >= 2 ) && ! is_404() )
+				$title = "$title $sep " . sprintf( __( 'Page %s', 'twentytwelve' ), max( $paged, $page ) );
+
+			return $title;
+		}
+		add_filter( 'wp_title', 'twentytwelve_wp_title', 10, 2 );
+		
+		
+	//***8.9 Return the Parent's Title - Used with SIS courses API
 		function the_parent_title() {
 		  global $post;
 		  if($post->post_parent == 0) return '';
@@ -656,7 +523,7 @@ update_option('image_default_link_type','none');
 					$classes = empty( $item->classes ) ? array() : (array) $item->classes;
 					
 					$class_names .= join( ' ', apply_filters( 'nav_menu_css_class', array_filter( $classes ), $item ) );
-					$class_names = ' class="'. esc_attr( $class_names ) . ' page-id-' . esc_attr( $item->object_id ) .'"';
+					$class_names = ' class="'. esc_attr( $class_names ) . ' page-id-' . esc_attr( $item->object_id ) .'" ';
 		           
 					$output .= $indent . '<li id="menu-item-'. $item->ID . '"' . $value . $class_names .'role="menuitem">';
 		           
@@ -667,11 +534,11 @@ update_option('image_default_link_type','none');
 		           	$attributes .= ! empty( $item->url )        ? ' href="'   . esc_attr( $item->url        ) .'"' : '';
 		           	// if the item has children add these two attributes to the anchor tag
 		           	if ( $args->has_children ) {
-						$attributes .= 'aria-haspopup="true" data-toggle="dropdown"';
+						$attributes .= ' aria-haspopup="true" data-toggle="dropdown" ';
 					}
 		
 		            $item_output = $args->before;
-		            $item_output .= '<a' . $attributes . 'aria-label="'. $item->title .' Page-' . $item->ID . '">';
+		            $item_output .= '<a' . $attributes . ' aria-label="'. $item->title .' Page-' . $item->ID . '">';
 		            $item_output .= $args->link_before .apply_filters( 'the_title', $item->title, $item->ID );
 		            $item_output .= $args->link_after;
 		            $item_output .= '</a>';
@@ -909,49 +776,7 @@ update_option('image_default_link_type','none');
 	}
 	
 	add_shortcode( "custommenu", "ksas_custom_menu_shortcode" );
-	//***10.2 Quicksearch Form Shortcode
-	function ksas_quicksearch_shortcode( $atts, $content = null ) {
-		extract( shortcode_atts( 
-			array(  
-				'label'            => 'Quick Search', 
-				'placeholder'       => 'Search by author, title, or keyword', 
-			), $atts )
-		); 
-		echo '<div id="fields_search">
-			<form action="#">
-				<fieldset class="radius10">
-					<div class="row">
-						<h6>' . $label . ':</h6>
-					</div>
-					<div class="row">		
-					<input type="submit" class="icon-search" placeholder="' . $placeholder . '" value="&#xe004;" /><input type="text" name="search" id="quicksearch" /> 	 
-					</div>
-				</fieldset>
-			</form>	
-		</div>';
-	}
-	add_shortcode( "quicksearch", "ksas_quicksearch_shortcode" );
-	
-/*******************11.0 MIME TYPES FOR LATEX UPLOADS******************/
-	add_filter('upload_mimes','add_tex_mime');
-	function add_tex_mime($mimes) {
-	  $mimes['latex'] = 'application/x-latex';
-	  $mimes['tex'] = 'application/x-tex';
-	  $mimes['bib'] = 'application/x-tex';
-	  $mimes['sty'] = 'application/x-tex';
-	  $mimes['dvi'] = 'application/x-dvi';
-	  $mimes['ps'] = 'application/postscript';
-	  return $mimes;
-	}
-	
-	add_filter('wp_mime_type_icon', 'tex_mime_type_icon', 10, 3);
-	function tex_mime_type_icon($icon, $mime, $post_id) {
-		if ( $mime == 'application/x-latex' || $mime == 'application/x-tex' )
-			return wp_mime_type_icon('text');
-		if ( $mime == 'application/x-dvi' || $mime == 'application/postscript' )
-			return wp_mime_type_icon('document');
-		return $icon;
-	}
+
 /*******************12.0 WYSIWYG******************/	
 	// 12.1 Reveal hidden buttons - sub and sup
 		function my_mce_buttons_2($buttons) {	
@@ -965,15 +790,17 @@ update_option('image_default_link_type','none');
 		}
 		add_filter('mce_buttons_2', 'my_mce_buttons_2');
 
-   //12.2 Keep html attributes
+	//12.2 Keep html attributes
 		add_action( 'after_setup_theme', 'x_kses_allow_data_attributes_on_links' );
 		function x_kses_allow_data_attributes_on_links() {
 		  global $allowedposttags;
 
-		    $tags = array( 'dl' );
+		    $tags = array( 'dl', 'ul', 'li', 'dd', 'div' );
 		    $new_attributes = array(
 		        'data-accordion' => array(),
 		        'data-tab' => array(),
+		        'data-accordion-item' => array(),
+		        'data-tab-content' => array(),
 		    );
 
 		    foreach ( $tags as $tag ) {
@@ -987,8 +814,12 @@ update_option('image_default_link_type','none');
 		    if ( ! isset( $options['extended_valid_elements'] ) ) 
 		        $options['extended_valid_elements'] = ''; 
 
-		    $options['extended_valid_elements'] .= ',dl[data-accordion|data-tab|class|id|style|href]';
-
+		    $options['extended_valid_elements'] .= ',dl[data-accordion|data-tab|data-tabs|class|id|style|href]';
+		    $options['extended_valid_elements'] .= ',ul[data-accordion|data-tab|data-tabs|class|id|style|href]';
+		    $options['extended_valid_elements'] .= ',li[data-accordion-item|class|id|style|href]';
+		    $options['extended_valid_elements'] .= ',dd[data-accordion-item|class|id|style|href]';
+		    $options['extended_valid_elements'] .= ',div[data-tab-content|class|id|style|href]';
+		    $options['extended_valid_elements'] .= ',div[data-tabs-content|class|id|style|href]';
 		    return $options; 
 		}
 
@@ -1004,8 +835,7 @@ update_option('image_default_link_type','none');
 				'aligncenter', 
 				'alignright',
 				'hr',
-				'wp_more',
-				'blockquote');
+				'wp_more');
 
 			return array_diff($buttons,$remove);
 		 }
@@ -1078,17 +908,12 @@ function my_admin_bar_render() {
 }
 add_action( 'wp_before_admin_bar_render', 'my_admin_bar_render' );
 
-
 // Add links to sites.krieger documentation
-add_action('admin_bar_menu', 'custom_toolbar_link', 999);
 
 function custom_toolbar_link($wp_admin_bar) {
-	if ( is_super_admin() )
-        return;
-    
 	$args = array(
 		'id' => 'webservices',
-		'title' => __('<img src="'.get_bloginfo('wpurl').'/wp-content/themes/ksas_flagship_f5/assets/images/shield.png" style="height:25px;vertical-align:middle;margin-right:5px" alt="JHU Shield" title="KSAS Web Services" />Web Services & Documentation &#9662;' ),
+		'title' => __('<img src="'.get_bloginfo('wpurl').'/wp-content/themes/ksas_flagship_2017/assets/images/shield.png" style="height:25px;vertical-align:middle;margin-right:5px" alt="JHU Shield" title="KSAS Web Services" />Web Services & Documentation &#9662;' ),
 		'href' => 'http://sites.krieger.jhu.edu', 
 		'meta' => array(
 			'target' => '_blank',
@@ -1143,13 +968,13 @@ function custom_toolbar_link($wp_admin_bar) {
 
 }
 
+add_action('admin_bar_menu', 'custom_toolbar_link', 999);
 
-/*******************15.0 W3TC Vulnerability Updates******************/	
-if ( defined( 'W3TC_VERSION' ) && version_compare( W3TC_VERSION, '0.9.4.1', '<=' ) ) {
- 	$sShieldW3tcPage = isset( $_GET[ 'page' ] ) ? $_GET[ 'page' ] : '';
- 	if ( $sShieldW3tcPage == 'w3tc_support' ) {
- 	 	wp_die( 'Access to W3 Total Cache support page is disabled due to XSS.' );
- 	}
+/*******************15.0 Disable PDF Thumbnails******************/	
+function wpb_disable_pdf_previews() { 
+	$fallbacksizes = array(); 
+	return $fallbacksizes; 
 }
+add_filter('fallback_intermediate_image_sizes', 'wpb_disable_pdf_previews');
 
 ?>
