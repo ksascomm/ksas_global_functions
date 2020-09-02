@@ -3,7 +3,7 @@
 Plugin Name: KSAS Global Functions
 Plugin URI: https://github.com/ksascomm/plugin_global_functions
 Description: This plugin should be network activated. Provides functions to change "Posts" labels to "News", removes unnecessary classes from navigation menus, sets up walker for sidebar menus, links to Web Services in admin toolbar, sets available blocks, and removes unwanted widgets, 
-Version: 2.0
+Version: 2.1
 Author: KSAS Communications
 Author URI: mailto:ksasweb@jhu.edu
 License: GPL2
@@ -22,7 +22,8 @@ License: GPL2
 		5.1 Custom Menu
 	6.0 Editor
 		6.1 Restrict majority of blocks to non-admins
-		6.2 Disable/Clean Inline Styles 
+		6.2 Disable/Clean Inline Styles
+		6.3 Allow uploads on custom post types
 	7.0 Login Screen
 	8.0 Toolbar Changes
 		8.1 Remove comments node
@@ -303,7 +304,112 @@ License: GPL2
 
 		    return $content;
 		}
+	
+	//6.3 Allow file uploads on custom post types
+	function ecpt_export_ui_scripts()
+	{
+	    global $ecpt_options;
+	?> 
+	    <script type = "text/javascript" >
+	    jQuery(document).ready(function($) {
 
+	        if ($('.form-table .ecpt_upload_field').length > 0) {
+	            // Media Uploader
+	            window.formfield = '';
+
+	            $('.ecpt_upload_image_button').live('click', function() {
+	                var send_attachment_bkp = wp.media.editor.send.attachment;
+	                var button = $(this);
+
+	                wp.media.editor.send.attachment = function(props, attachment) {
+
+	                    $(button).prev().prev().attr('src', attachment.url);
+	                    $(button).prev().val(attachment.url);
+
+	                    wp.media.editor.send.attachment = send_attachment_bkp;
+	                }
+
+	                wp.media.editor.open(button);
+
+	                return false;
+	            });
+	            window.original_send_to_editor = window.send_to_editor;
+	            window.send_to_editor = function(html) {
+	                if (window.formfield) {
+	                    imgurl = $('a', '<div>' + html + '</div>').attr('href');
+	                    window.formfield.val(imgurl);
+	                    tb_remove();
+	                } else {
+	                    window.original_send_to_editor(html);
+	                }
+	                window.formfield = '';
+	                window.imagefield = false;
+	            }
+	        }
+	        // add new repeatable field
+	        $(".ecpt_add_new_field").on('click', function() {
+	            var field = $(this).closest('td').find("div.ecpt_repeatable_wrapper:last").clone(true);
+	            var fieldLocation = $(this).closest('td').find('div.ecpt_repeatable_wrapper:last');
+	            // get the hidden field that has the name value
+	            var name_field = $("input.ecpt_repeatable_field_name", ".ecpt_field_type_repeatable:first");
+	            // set the base of the new field name
+	            var name = $(name_field).attr("id");
+	            // set the new field val to blank
+	            $('input', field).val("");
+
+	            // set up a count var
+	            var count = 0;
+	            $('.ecpt_repeatable_field').each(function() {
+	                count = count + 1;
+	            });
+	            name = name + '[' + count + ']';
+	            $('input', field).attr("name", name);
+	            $('input', field).attr("id", name);
+	            field.insertAfter(fieldLocation, $(this).closest('td'));
+
+	            return false;
+	        });
+
+	        // add new repeatable upload field
+	        $(".ecpt_add_new_upload_field").on('click', function() {
+	            var container = $(this).closest('tr');
+	            var field = $(this).closest('td').find("div.ecpt_repeatable_upload_wrapper:last").clone(true);
+	            var fieldLocation = $(this).closest('td').find('div.ecpt_repeatable_upload_wrapper:last');
+	            // get the hidden field that has the name value
+	            var name_field = $("input.ecpt_repeatable_upload_field_name", container);
+	            // set the base of the new field name
+	            var name = $(name_field).attr("id");
+	            // set the new field val to blank
+	            $('input[type="text"]', field).val("");
+
+	            // set up a count var
+	            var count = 0;
+	            $('.ecpt_repeatable_upload_field', container).each(function() {
+	                count = count + 1;
+	            });
+	            name = name + '[' + count + ']';
+	            $('input', field).attr("name", name);
+	            $('input', field).attr("id", name);
+	            field.insertAfter(fieldLocation, $(this).closest('td'));
+
+	            return false;
+	        });
+
+	        // remove repeatable field
+	        $('.ecpt_remove_repeatable').on('click', function(e) {
+	            e.preventDefault();
+	            var field = $(this).parent();
+	            $('input', field).val("");
+	            field.remove();
+	            return false;
+	        });
+
+	    }); </script>
+	            
+	    <?php }
+			if ((isset($_GET['post']) && (isset($_GET['action']) && $_GET['action'] == 'edit')) || (strstr($_SERVER['REQUEST_URI'], 'wp-admin/post-new.php'))) {
+			    add_action('admin_head', 'ecpt_export_ui_scripts');
+			}
 /*******************7.0 Login Screen******************/	
 
 //show screen if user is attempting to login by bypassing JHED
