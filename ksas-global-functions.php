@@ -253,7 +253,7 @@ function ksas_custom_menu_shortcode( $atts, $content = null ) {
 			'walker'          => $walker,
 			'submenu'         => $submenu,
 			'theme_location'  => $theme_location,
-		),
+		)
 	);
 }
 
