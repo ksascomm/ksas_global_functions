@@ -271,6 +271,7 @@ function restrict_blocks( $allowed_blocks ) {
 			$allowed_blocks = array(
 				'core/block',
 				'core/image',
+				'core/gallery',
 				'core/paragraph',
 				'core/heading',
 				'core/list',
@@ -278,11 +279,11 @@ function restrict_blocks( $allowed_blocks ) {
 				'core/file',
 				'core/button',
 				'core/separator',
-				'core-embed/youtube',
-				'core-embed/vimeo',
+				'core/embed',
 				'core/shortcode',
+				'core/table',
 				'formidable/simple-form',
-				'ksas-callouts/ksas-callout-block',
+				'ksas-callouts/ksas-callout-block'
 			);
 	}
 	return $allowed_blocks;
