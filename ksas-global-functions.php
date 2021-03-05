@@ -50,6 +50,7 @@ function unregister_default_wp_widgets() {
  *****************************/
 function change_post_object_label() {
 	$get_post_type              = get_post_type_object( 'post' );
+	$labels                     = $get_post_type->labels;
 	$labels->name               = 'News';
 	$labels->singular_name      = 'News';
 	$labels->add_new            = 'Add News';
